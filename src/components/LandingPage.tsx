@@ -1,8 +1,17 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { DisclaimerBanner } from './DisclaimerBanner'
 import { PrivacyTrustNote } from './PrivacyTrustNote'
 
 export function LandingPage() {
+  const navigate = useNavigate()
+  const { enterDemoMode } = useAuth()
+
+  function goInternalPreview() {
+    enterDemoMode()
+    navigate('/dashboard')
+  }
+
   return (
     <div className="min-h-dvh bg-cream px-4 py-10">
       <div className="mx-auto max-w-lg">
@@ -32,6 +41,21 @@ export function LandingPage() {
           >
             Iniciar sesión
           </Link>
+        </div>
+
+        <div className="mb-8 rounded-2xl border border-sage-light bg-surface/90 px-4 py-4">
+          <p className="m-0 text-sm font-medium text-ink">Probar la app por dentro</p>
+          <p className="mt-2 mb-3 text-sm leading-relaxed text-ink-muted">
+            Entrá sin cuenta ni servidor: es una vista previa interna. Los datos quedan solo en
+            este navegador (ideal para revisar pantallas con alguien de confianza).
+          </p>
+          <button
+            type="button"
+            onClick={goInternalPreview}
+            className="w-full min-h-12 cursor-pointer rounded-2xl border-2 border-dashed border-sage bg-cream/80 px-4 py-3 text-center font-medium text-ink transition hover:bg-cream"
+          >
+            Entrar en vista previa interna
+          </button>
         </div>
 
         <div className="mb-8 rounded-2xl border border-amber-200/80 bg-amber-50/90 px-4 py-4 text-sm leading-relaxed text-ink">

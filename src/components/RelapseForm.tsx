@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { appendDemoCheckin, appendDemoRelapse } from '../demo/demoStorage'
 import { supabase } from '../lib/supabase'
 import type { SituationContext } from '../types/database'
 import { CrisisLine, DisclaimerBanner } from './DisclaimerBanner'
@@ -24,6 +26,7 @@ export function RelapseForm({
   onComplete,
   onBack,
 }: Props) {
+  const { demoMode } = useAuth()
   const [location, setLocation] = useState('')
   const [peopleContext, setPeopleContext] = useState('')
   const [emotionBefore, setEmotionBefore] = useState('')
@@ -38,6 +41,28 @@ export function RelapseForm({
     setError(null)
     setSaving(true)
     try {
+      if (demoMode) {
+        appendDemoRelapse({
+          user_id: userId,
+          location: location.trim() || null,
+          people_context: peopleContext.trim() || null,
+          emotion_before: emotionBefore.trim() || null,
+          trigger: trigger.trim() || null,
+          next_action: nextAction.trim() || null,
+          notified_someone: notify,
+        })
+        appendDemoCheckin({
+          user_id: userId,
+          mood: 'consumed',
+          context,
+          craving_intensity: null,
+          consumed: true,
+          had_urge: false,
+          note: 'Registro de recaída guardado.',
+        })
+        onComplete()
+        return
+      }
       const { error: rErr } = await supabase.from('relapse_logs').insert({
         user_id: userId,
         location: location.trim() || null,

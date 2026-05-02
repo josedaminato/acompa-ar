@@ -9,10 +9,10 @@ import { Layout } from './components/Layout'
 import { OnboardingContacts } from './components/OnboardingContacts'
 
 function RequireAuth() {
-  const { user, loading } = useAuth()
+  const { user, loading, demoMode } = useAuth()
   const location = useLocation()
 
-  if (loading) {
+  if (loading && !demoMode) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-cream px-4 text-ink-muted">
         Cargando…
@@ -46,10 +46,10 @@ function RequireOnboardingComplete() {
 }
 
 function AuthRedirectIfLoggedIn() {
-  const { user, loading } = useAuth()
+  const { user, loading, demoMode } = useAuth()
   const { onboardingComplete, loading: profileLoading } = useProfile()
 
-  if (loading || (user && profileLoading)) {
+  if ((loading && !demoMode) || (user && profileLoading)) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-cream px-4 text-ink-muted">
         Cargando…

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { DEMO_USER_ID, loadDemoBundle } from '../demo/demoStorage'
 import { supabase, supabaseConfigured } from '../lib/supabase'
 import type { Database } from '../types/database'
 import { useAuth } from '../contexts/AuthContext'
@@ -7,19 +8,37 @@ type ProfileRow = Database['public']['Tables']['users_profile']['Row']
 type ContactRow = Database['public']['Tables']['support_contacts']['Row']
 
 export function useProfile() {
-  const { user } = useAuth()
+  const { user, demoMode } = useAuth()
   const [profile, setProfile] = useState<ProfileRow | null>(null)
   const [contacts, setContacts] = useState<ContactRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
-    if (!supabaseConfigured || !user) {
+    if (!user) {
       setProfile(null)
       setContacts([])
       setLoading(false)
       return
     }
+
+    if (demoMode && user.id === DEMO_USER_ID) {
+      setLoading(true)
+      setError(null)
+      const b = loadDemoBundle()
+      setProfile(b.profile)
+      setContacts(b.contacts)
+      setLoading(false)
+      return
+    }
+
+    if (!supabaseConfigured) {
+      setProfile(null)
+      setContacts([])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     setError(null)
     const [pRes, cRes] = await Promise.all([
@@ -31,7 +50,7 @@ export function useProfile() {
     if (cRes.error) setError(cRes.error.message)
     else setContacts(cRes.data ?? [])
     setLoading(false)
-  }, [user])
+  }, [user, demoMode])
 
   useEffect(() => {
     void refresh()

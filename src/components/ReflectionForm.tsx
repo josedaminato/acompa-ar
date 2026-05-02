@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { appendDemoCheckin } from '../demo/demoStorage'
 import { supabase } from '../lib/supabase'
 import type { Mood, SituationContext } from '../types/database'
 
@@ -24,6 +26,7 @@ type Props = {
 }
 
 export function ReflectionForm({ userId, mood, context, onSaved, onBack }: Props) {
+  const { demoMode } = useAuth()
   const [kind, setKind] = useState<ReflectionKind | null>(null)
   const [note, setNote] = useState('')
   const [intensity, setIntensity] = useState(5)
@@ -37,6 +40,20 @@ export function ReflectionForm({ userId, mood, context, onSaved, onBack }: Props
     setSaving(true)
     try {
       const prefix = kind ? `[${KIND_LABELS[kind]}] ` : ''
+      const noteText = `${prefix}${note.trim()}`.trim() || null
+      if (demoMode) {
+        appendDemoCheckin({
+          user_id: userId,
+          mood,
+          context,
+          craving_intensity: intensity,
+          consumed,
+          had_urge: hadUrge,
+          note: noteText,
+        })
+        onSaved()
+        return
+      }
       const { error: err } = await supabase.from('daily_checkins').insert({
         user_id: userId,
         mood,
@@ -44,7 +61,7 @@ export function ReflectionForm({ userId, mood, context, onSaved, onBack }: Props
         craving_intensity: intensity,
         consumed,
         had_urge: hadUrge,
-        note: `${prefix}${note.trim()}`.trim() || null,
+        note: noteText,
       })
       if (err) throw err
       onSaved()

@@ -28,7 +28,7 @@ function flowFor(mood: Mood, context: SituationContext): 'reflection' | 'support
 }
 
 export function Dashboard() {
-  const { user } = useAuth()
+  const { user, demoMode } = useAuth()
   const { profile, supportContacts, loading, error, refresh } = useProfile()
   const [step, setStep] = useState<Step>({ phase: 'mood' })
 
@@ -45,12 +45,13 @@ export function Dashboard() {
 
   if (!user) return null
 
-  if (!supabaseConfigured) {
+  if (!demoMode && !supabaseConfigured) {
     return (
       <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-950">
         Configurá <code className="text-xs">VITE_SUPABASE_URL</code> y{' '}
         <code className="text-xs">VITE_SUPABASE_ANON_KEY</code> en un archivo{' '}
-        <code className="text-xs">.env</code> para usar la app.
+        <code className="text-xs">.env</code> para usar la app con cuenta real, o entrá desde
+        la landing en <strong>vista previa interna</strong>.
       </p>
     )
   }

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { replaceDemoProfileAndContacts } from '../demo/demoStorage'
 import { supabase, supabaseConfigured } from '../lib/supabase'
 import { useProfile } from '../hooks/useProfile'
+import type { Database } from '../types/database'
 import { DisclaimerBanner } from './DisclaimerBanner'
 import { PrivacyTrustNote } from './PrivacyTrustNote'
 
@@ -12,8 +14,11 @@ const PRESET_MESSAGES = [
   'Estoy en un lugar donde están consumiendo y me está costando. ¿Podés llamarme?',
 ]
 
+type ProfileRow = Database['public']['Tables']['users_profile']['Row']
+type ContactRow = Database['public']['Tables']['support_contacts']['Row']
+
 export function OnboardingContacts() {
-  const { user } = useAuth()
+  const { user, demoMode } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const { profile, contacts, loading: profileLoading, refresh } = useProfile()
@@ -65,8 +70,8 @@ export function OnboardingContacts() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (!user || !supabaseConfigured) {
-      setError('No hay sesión o falta configurar Supabase.')
+    if (!user) {
+      setError('No hay sesión.')
       return
     }
     if (!displayName.trim()) {
@@ -75,6 +80,71 @@ export function OnboardingContacts() {
     }
     if (!c1Name.trim() || !c1Phone.trim() || !c2Name.trim() || !c2Phone.trim()) {
       setError('Completá al menos dos contactos de apoyo con nombre y teléfono.')
+      return
+    }
+
+    if (demoMode) {
+      setSubmitting(true)
+      try {
+        const now = new Date().toISOString()
+        const profileRow: ProfileRow = {
+          id: profile?.id ?? 'demo-profile',
+          user_id: user.id,
+          name: displayName.trim(),
+          crisis_message: crisisMessage.trim() || null,
+          created_at: profile?.created_at ?? now,
+        }
+        const rows: ContactRow[] = [
+          {
+            id: crypto.randomUUID(),
+            user_id: user.id,
+            name: c1Name.trim(),
+            phone: c1Phone.trim(),
+            role: 'support_1',
+            created_at: now,
+          },
+          {
+            id: crypto.randomUUID(),
+            user_id: user.id,
+            name: c2Name.trim(),
+            phone: c2Phone.trim(),
+            role: 'support_2',
+            created_at: now,
+          },
+        ]
+        if (c3Name.trim() && c3Phone.trim()) {
+          rows.push({
+            id: crypto.randomUUID(),
+            user_id: user.id,
+            name: c3Name.trim(),
+            phone: c3Phone.trim(),
+            role: 'support_3',
+            created_at: now,
+          })
+        }
+        if (therapistName.trim() && therapistPhone.trim()) {
+          rows.push({
+            id: crypto.randomUUID(),
+            user_id: user.id,
+            name: therapistName.trim(),
+            phone: therapistPhone.trim(),
+            role: 'therapist',
+            created_at: now,
+          })
+        }
+        replaceDemoProfileAndContacts(profileRow, rows)
+        await refresh()
+        navigate('/dashboard', { replace: true })
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'No se pudo guardar.')
+      } finally {
+        setSubmitting(false)
+      }
+      return
+    }
+
+    if (!supabaseConfigured) {
+      setError('Falta configurar Supabase en .env o usá la vista previa desde la landing.')
       return
     }
 

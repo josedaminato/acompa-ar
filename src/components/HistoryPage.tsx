@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { loadDemoBundle } from '../demo/demoStorage'
 import { supabase, supabaseConfigured } from '../lib/supabase'
 import type { Database } from '../types/database'
 import { DisclaimerBanner } from './DisclaimerBanner'
@@ -8,14 +9,27 @@ type Checkin = Database['public']['Tables']['daily_checkins']['Row']
 type Relapse = Database['public']['Tables']['relapse_logs']['Row']
 
 export function HistoryPage() {
-  const { user } = useAuth()
+  const { user, demoMode } = useAuth()
   const [checkins, setCheckins] = useState<Checkin[]>([])
   const [relapses, setRelapses] = useState<Relapse[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
-    if (!user || !supabaseConfigured) {
+    if (!user) {
+      setLoading(false)
+      return
+    }
+    if (demoMode) {
+      setLoading(true)
+      setError(null)
+      const b = loadDemoBundle()
+      setCheckins(b.checkins)
+      setRelapses(b.relapses)
+      setLoading(false)
+      return
+    }
+    if (!supabaseConfigured) {
       setLoading(false)
       return
     }
@@ -40,7 +54,7 @@ export function HistoryPage() {
     if (rRes.error) setError(rRes.error.message)
     else setRelapses(rRes.data ?? [])
     setLoading(false)
-  }, [user])
+  }, [user, demoMode])
 
   useEffect(() => {
     void load()
@@ -73,7 +87,7 @@ export function HistoryPage() {
     }
   }, [checkins, relapses])
 
-  if (!supabaseConfigured) {
+  if (!demoMode && !supabaseConfigured) {
     return <p className="text-sm text-ink-muted">Supabase no configurado.</p>
   }
 

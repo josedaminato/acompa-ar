@@ -12,6 +12,10 @@ npm run dev
 
 Abrir `http://localhost:5173`.
 
+### Vista previa interna (sin Supabase)
+
+En la landing, **“Entrar en vista previa interna”** abre el dashboard con datos de ejemplo guardados solo en el navegador (`localStorage`). Sirve para mostrar la interfaz a alguien sin backend. **Salir** cierra esa sesión simulada.
+
 ## Ver la interfaz en internet
 
 ### Opción A — GitHub Pages (gratis, con este repo)

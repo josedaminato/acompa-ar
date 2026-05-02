@@ -3,10 +3,19 @@ import { useAuth } from '../contexts/AuthContext'
 import { DisclaimerBanner } from './DisclaimerBanner'
 
 export function Layout() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, demoMode } = useAuth()
 
   return (
     <div className="flex min-h-dvh flex-col">
+      {demoMode && (
+        <div
+          role="status"
+          className="border-b border-sage-light bg-sage-light/40 px-4 py-2 text-center text-xs leading-snug text-ink"
+        >
+          <strong>Vista previa interna</strong> — nada se guarda en servidor; solo en este
+          dispositivo. Para uso real creá cuenta con Supabase configurado.
+        </div>
+      )}
       <header className="sticky top-0 z-10 border-b border-border-soft bg-cream/95 backdrop-blur-sm">
         <div className="mx-auto flex max-w-lg items-center justify-between gap-3 px-4 py-3">
           <Link

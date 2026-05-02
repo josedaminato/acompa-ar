@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import { appendDemoCheckin } from '../demo/demoStorage'
 import { supabase } from '../lib/supabase'
 import type { Database } from '../types/database'
 import type { Mood, SituationContext } from '../types/database'
@@ -27,6 +29,7 @@ export function SupportMode({
   onBack,
   onSavedNote,
 }: Props) {
+  const { demoMode } = useAuth()
   const [vent, setVent] = useState('')
   const [saving, setSaving] = useState(false)
   const [saveMsg, setSaveMsg] = useState<string | null>(null)
@@ -35,6 +38,21 @@ export function SupportMode({
     if (!vent.trim()) return
     setSaving(true)
     setSaveMsg(null)
+    if (demoMode) {
+      appendDemoCheckin({
+        user_id: userId,
+        mood,
+        context,
+        craving_intensity: null,
+        had_urge: mood === 'craving' || mood === 'anxious',
+        consumed: false,
+        note: vent.trim(),
+      })
+      setSaving(false)
+      setSaveMsg('Listo, guardamos lo que escribiste (solo en este navegador).')
+      onSavedNote?.()
+      return
+    }
     const { error } = await supabase.from('daily_checkins').insert({
       user_id: userId,
       mood,

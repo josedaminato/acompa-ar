@@ -18,13 +18,17 @@ En la landing, **“Entrar en vista previa interna”** abre el dashboard con da
 
 ## Ver la interfaz en internet
 
-### Opción A — GitHub Pages (gratis, con este repo)
+### GitHub Pages (este repo)
 
-1. En GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
-2. Hacé push a `main` (el workflow `.github/workflows/pages.yml` genera el sitio).
-3. La URL queda: **https://josedaminato.github.io/acompa-ar/**
+El workflow sube el **build de Vite** (`dist/`) a la rama **`gh-pages`**. Si antes ves pantalla en blanco, suele ser porque Pages estaba sirviendo la **raíz del repo** (`index.html` con `/src/main.tsx`, que el navegador no puede ejecutar).
 
-(Si el repo no es público o cambia el nombre, ajustá `VITE_BASE_URL` en el workflow para que coincida con `/nombre-del-repo/`.)
+1. En GitHub: **Settings → Pages**.
+2. En **Build and deployment → Source**, elegí **Deploy from a branch**.
+3. Branch: **`gh-pages`**, carpeta **`/ (root)`**, Guardar.
+4. Tras cada push a **`main`**, esperá a que el workflow **Deploy GitHub Pages** termine en verde (**Actions**).
+5. Abrí: **https://josedaminato.github.io/acompa-ar/**
+
+Si renombrás el repo, cambiá `VITE_BASE_URL` en `.github/workflows/pages.yml` para que sea `/nombre-del-repo/`.
 
 ### Opción B — Vercel
 

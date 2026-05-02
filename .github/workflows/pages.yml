@@ -1,45 +1,46 @@
-name: Deploy to GitHub Pages
+name: Deploy GitHub Pages
 
 on:
   push:
     branches: [main]
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
+# Alternativa más simple: publicar ./dist en la rama gh-pages (convive con Pages "Deploy from branch").
 concurrency:
-  group: pages
+  group: gh-pages-deploy
   cancel-in-progress: true
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
+
       - name: Install and build
         env:
+          # Debe coincidir con el nombre del repo en GitHub (subruta del sitio).
           VITE_BASE_URL: /acompa-ar/
         run: |
           npm ci
           npm run build
-      - name: SPA fallback (refresco en rutas como /auth)
-        run: cp dist/index.html dist/404.html
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: SPA fallback (refresco en /auth, etc.)
+        run: cp dist/index.html dist/404.html
+
+      - name: Asegurar .nojekyll (GitHub Pages no use Jekyll sobre los assets)
+        run: touch dist/.nojekyll
+
+      - name: Subir sitio a la rama gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: gh-pages
+          force_orphan: true

@@ -1,19 +1,25 @@
+# Publica el build de Vite en la carpeta docs/ sobre main.
+# En GitHub: Settings → Pages → Deploy from branch → Branch: main, Folder: /docs
+#
+# paths-ignore evita bucles cuando el deploy solo commitea docs/**.
+
 name: Deploy GitHub Pages
 
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'docs/**'
 
 permissions:
   contents: write
 
-# Alternativa más simple: publicar ./dist en la rama gh-pages (convive con Pages "Deploy from branch").
 concurrency:
-  group: gh-pages-deploy
+  group: pages-docs
   cancel-in-progress: true
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,22 +31,18 @@ jobs:
 
       - name: Install and build
         env:
-          # Debe coincidir con el nombre del repo en GitHub (subruta del sitio).
           VITE_BASE_URL: /acompa-ar/
         run: |
           npm ci
           npm run build
 
-      - name: SPA fallback (refresco en /auth, etc.)
+      - name: SPA fallback (refresco en rutas internas)
         run: cp dist/index.html dist/404.html
 
-      - name: Asegurar .nojekyll (GitHub Pages no use Jekyll sobre los assets)
-        run: touch dist/.nojekyll
-
-      - name: Subir sitio a la rama gh-pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Publicar dist → docs/ en main
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          publish_branch: gh-pages
-          force_orphan: true
+          branch: main
+          folder: dist
+          target-folder: docs
+          commit-message: 'chore: deploy Pages → docs/'

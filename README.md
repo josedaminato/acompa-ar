@@ -29,6 +29,8 @@ El sitio estático compilado vive en la carpeta **`docs/`** en la rama **`main`*
 
 URL: **https://josedaminato.github.io/acompa-ar/**
 
+Si GitHub sigue sirviendo la **raíz del repo** (pantalla blanca), el sitio redirige solo en `github.io` al build en **`…/docs/`**. Las rutas internas usan hash (`#/dashboard`) para que funcione en cualquier modo de Pages.
+
 En cada push a `main` (salvo si solo cambió `docs/`), el workflow **Deploy GitHub Pages** vuelve a generar `docs/`.
 
 Si renombrás el repo, cambiá `VITE_BASE_URL` en `.github/workflows/pages.yml` a `/nombre-del-repo/`.

@@ -11,10 +11,33 @@
       rel="stylesheet"
     />
     <title>Acompañar — apoyo en recuperación</title>
-    <script type="module" crossorigin src="/acompa-ar/assets/index-CNnCdLmr.js"></script>
-    <link rel="stylesheet" crossorigin href="/acompa-ar/assets/index-BiCcnGxa.css">
+    <script type="module" crossorigin src="/acompa-ar/assets/index-dv2WoPrt.js"></script>
+    <link rel="stylesheet" crossorigin href="/acompa-ar/assets/index-WtKg-HHV.css">
   </head>
   <body>
     <div id="root"></div>
+    <!--
+      GitHub Pages mal configurado sirve esta plantilla de desarrollo en la raíz del repo.
+      El build real está en /docs/. Redirigimos solo si detectamos main.tsx (no en localhost).
+    -->
+    <script>
+      ;(function () {
+        if (/localhost|127\.0\.0\.1/.test(location.hostname)) return
+        if (!/github\.io$/.test(location.hostname)) return
+        if (location.pathname.indexOf('/docs/') !== -1) return
+        var hasDevEntry = false
+        var scripts = document.getElementsByTagName('script')
+        for (var i = 0; i < scripts.length; i++) {
+          var s = scripts[i].getAttribute('src') || ''
+          if (s.indexOf('main.tsx') !== -1) {
+            hasDevEntry = true
+            break
+          }
+        }
+        if (!hasDevEntry) return
+        var base = location.pathname.replace(/\/?$/, '/')
+        location.replace(location.origin + base + 'docs/')
+      })()
+    </script>
   </body>
 </html>

@@ -15,5 +15,28 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <!--
+      GitHub Pages mal configurado sirve esta plantilla de desarrollo en la raíz del repo.
+      El build real está en /docs/. Redirigimos solo si detectamos main.tsx (no en localhost).
+    -->
+    <script>
+      ;(function () {
+        if (/localhost|127\.0\.0\.1/.test(location.hostname)) return
+        if (!/github\.io$/.test(location.hostname)) return
+        if (location.pathname.indexOf('/docs/') !== -1) return
+        var hasDevEntry = false
+        var scripts = document.getElementsByTagName('script')
+        for (var i = 0; i < scripts.length; i++) {
+          var s = scripts[i].getAttribute('src') || ''
+          if (s.indexOf('main.tsx') !== -1) {
+            hasDevEntry = true
+            break
+          }
+        }
+        if (!hasDevEntry) return
+        var base = location.pathname.replace(/\/?$/, '/')
+        location.replace(location.origin + base + 'docs/')
+      })()
+    </script>
   </body>
 </html>
